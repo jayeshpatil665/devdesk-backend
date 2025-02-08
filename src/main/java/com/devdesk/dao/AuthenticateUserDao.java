@@ -11,6 +11,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementSetter;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.ObjectUtils;
 
 import com.devdesk.request.AuthenticateUserRequest;
 import com.devdesk.request.RegisterUserRequest;
@@ -30,7 +31,6 @@ public class AuthenticateUserDao {
 		String sql = "SELECT * FROM dev_user WHERE dev_empid = "+request.getEmpId()+" AND dev_tag =  '"+request.getDevTag()+"'";
 
 		RowMapper<RegisterUserRequest> rowMapper = new RowMapper<RegisterUserRequest>() {
-			
 			@Override
 			public RegisterUserRequest mapRow(ResultSet rs, int rowNum) throws SQLException {
 				
@@ -52,6 +52,25 @@ public class AuthenticateUserDao {
 			return new AuthenticateUserResponse("FAILURE", 0, "", "",  "token", "userIdleTimeOut", "userIdleTimeOutPopup");
 		
 		return new AuthenticateUserResponse("SUCCESS", userDetailList.get(0).getEmpId(), userDetailList.get(0).getDevFirstname()+userDetailList.get(0).getDevLastname(), userDetailList.get(0).getDevTag(),  "Give-Respect_Take-respect", "60", "15");
+	}
+	
+	public String isUserExist(String empId) {
+		String sql = "SELECT dev_tag FROM dev_user WHERE dev_empid = "+empId;
+		
+		RowMapper<String> rowMapper = new RowMapper<String>() {
+			@Override
+			public String mapRow(ResultSet rs, int rowNum) throws SQLException {
+				return rs.getString("dev_tag").toString();
+			}
+		};
+		
+		List<String> devTags = jdbc.query (sql,rowMapper);
+		System.out.println(devTags);
+		
+		if(!ObjectUtils.isEmpty(devTags))
+			return devTags.get(0);
+		else
+			return null;
 	}
 
 	public CommonResponse registerUser(RegisterUserRequest request) {
